@@ -1,0 +1,378 @@
+/* Presentation typefaces — falls back to site --heading-font-family / --body-font-family if blocked */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap');
+
+/* ─── slide block — Adobe dark premium presentation design ─── */
+
+:root {
+  --slide-bg: #0c0c0e;
+  --slide-accent: #fa0f00;
+  --slide-accent-warm: #f25c05;
+  --slide-accent-blue: #1473e6;
+  --slide-accent-purple: #7e3bf2;
+  --slide-text: #f4f4f4;
+  --slide-muted: #5a5a5a;
+  --slide-display: 'Bebas Neue', var(--heading-font-family);
+  --slide-body: 'Source Sans 3', var(--body-font-family);
+  --slide-mono: 'Source Code Pro', 'Courier New', monospace;
+}
+
+/* ─── page scroll behavior when slide block present ─── */
+
+body:has(.slide) {
+  background: var(--slide-bg);
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+}
+
+body:has(.slide) footer {
+  display: none;
+}
+
+/* Adobe signature red stripe — top of page */
+body:has(.slide)::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #fa0f00 0%, #c32f1e 50%, #fa0f00 100%);
+  z-index: 9999;
+}
+
+/* ─── container reset ─── */
+
+.slide-container,
+.slide-wrapper {
+  margin: 0;
+  padding: 0;
+  max-width: unset;
+}
+
+.slide {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── individual slide section ─── */
+
+.slide-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 80px 48px;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  text-align: center;
+  overflow: hidden;
+  background: var(--section-bg, var(--slide-bg)), var(--slide-bg);
+}
+
+/* grain texture overlay */
+.slide-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* accent glow — top edge */
+.slide-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--slide-accent) 30%, var(--slide-accent-blue) 70%, transparent);
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.slide-section:first-child::after {
+  display: none;
+}
+
+/* section content above overlays */
+.slide-section > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* EDS wraps each cell in a div — force it to center like the section itself */
+.slide-section > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+/* ─── section number badge ─── */
+
+.slide-section[data-index]::before {
+  content: attr(data-index);
+  position: absolute;
+  bottom: 48px;
+  right: 56px;
+  font-family: var(--slide-display);
+  font-size: clamp(6rem, 12vw, 14rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 6%);
+  pointer-events: none;
+  z-index: 0;
+  letter-spacing: 0.02em;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ─── typography ─── */
+
+.slide-section h1 {
+  font-family: var(--slide-display);
+  font-size: clamp(3rem, 7vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  color: var(--slide-text);
+  max-width: 1100px;
+  margin: 0 0 32px;
+  text-transform: uppercase;
+}
+
+.slide-section h2 {
+  font-family: var(--slide-display);
+  font-size: clamp(2.5rem, 5.5vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--slide-text);
+  max-width: 1000px;
+  margin: 0 0 28px;
+  text-transform: uppercase;
+}
+
+/* accent color on first word via JS-injected span */
+.slide-section h1 .accent,
+.slide-section h2 .accent {
+  color: var(--slide-accent);
+}
+
+.slide-section p {
+  font-family: var(--slide-body);
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 400;
+  max-width: 720px;
+  line-height: 1.75;
+  color: rgb(244 244 244 / 72%);
+  margin: 0 0 16px;
+  letter-spacing: 0.01em;
+}
+
+/* ─── lists (static bullets / talking points) ─── */
+
+.slide-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  max-width: 620px;
+  text-align: left;
+}
+
+.slide-section ul li {
+  font-family: var(--slide-body);
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  font-weight: 400;
+  color: rgb(244 244 244 / 60%);
+  padding: 8px 0 8px 24px;
+  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  position: relative;
+  letter-spacing: 0.01em;
+}
+
+.slide-section ul li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--slide-accent);
+  opacity: 0.7;
+}
+
+/* ─── inline code ─── */
+
+.slide-section code {
+  font-family: var(--slide-mono);
+  font-size: 0.85em;
+  color: var(--slide-accent-blue);
+  background: rgb(20 115 230 / 8%);
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid rgb(20 115 230 / 20%);
+  letter-spacing: 0.03em;
+}
+
+/* ─── accent divider ─── */
+
+.slide-section .slide-divider {
+  width: 48px;
+  height: 2px;
+  background: var(--slide-accent);
+  margin: 24px auto;
+  display: block;
+}
+
+
+/* ─── reveal animations ─── */
+
+.slide-section p,
+.slide-section ul {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── headline char-stagger reveal ─── */
+
+.slide-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.slide-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.4em);
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--char-i) * 22ms + 0.1s);
+  will-change: opacity, transform;
+}
+
+/* ─── highlighter on bold phrases ─── */
+
+.slide-section strong {
+  font-weight: inherit;
+  background-image: linear-gradient(transparent 55%, rgb(250 15 0 / 38%) 55%, rgb(250 15 0 / 38%) 92%, transparent 92%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  padding: 0 2px;
+  transition: background-size 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 0.9s;
+}
+
+/* ─── list layout — left-aligned block with › arrows ─── */
+
+.slide-section[data-layout="list"] > div {
+  align-items: flex-start;
+  max-width: 600px;
+}
+
+.slide-section[data-layout="list"] h1,
+.slide-section[data-layout="list"] h2 {
+  align-self: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.slide-section[data-layout="list"] p,
+.slide-section[data-layout="hero-list"] p {
+  text-align: left;
+  width: 560px;
+  max-width: 90vw;
+  margin: 0 0 4px;
+  font-size: clamp(0.8rem, 1.25vw, 0.92rem);
+  color: rgb(244 244 244 / 55%);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  box-sizing: border-box;
+}
+
+.slide-section[data-layout="list"] p::before,
+.slide-section[data-layout="hero-list"] p::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--slide-accent);
+  opacity: 0.55;
+  font-size: 1.1em;
+  line-height: inherit;
+}
+
+.slide-section[data-layout="list"] p.slide-last-p,
+.slide-section[data-layout="hero-list"] p.slide-last-p {
+  color: var(--slide-accent);
+  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  margin-top: 32px;
+  padding-left: 0;
+  padding-top: 24px;
+  letter-spacing: 0.07em;
+  width: 560px;
+  max-width: 90vw;
+  border-top: 1px solid rgb(250 15 0 / 20%);
+}
+
+.slide-section[data-layout="list"] p.slide-last-p::before,
+.slide-section[data-layout="hero-list"] p.slide-last-p::before {
+  display: none;
+}
+
+.slide-section.is-visible .slide-char {
+  opacity: 1;
+  transform: none;
+}
+
+.slide-section.is-visible strong {
+  background-size: 100% 100%;
+}
+
+.slide-section.is-visible p {
+  opacity: 1;
+  transform: none;
+  transition-delay: var(--p-delay, 0.2s);
+}
+
+.slide-section.is-visible ul {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.22s;
+}
+
+/* ─── mobile ─── */
+
+@media (width <= 640px) {
+  .slide-section {
+    padding: 56px 16px;
+  }
+
+  .slide-section[data-layout="list"] > div {
+    max-width: 100%;
+  }
+
+  .slide-section[data-layout="list"] p,
+  .slide-section[data-layout="hero-list"] p {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .slide-section[data-layout="list"] p.slide-last-p,
+  .slide-section[data-layout="hero-list"] p.slide-last-p {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .slide-section[data-index]::before {
+    bottom: 20px;
+    right: 16px;
+  }
+}
