@@ -1,9 +1,9 @@
 const SECTION_CONFIG = [
-  { gradient: 'radial-gradient(ellipse 70% 55% at 50% 100%, rgb(250 15 0 / 14%) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 15% 15%, rgb(126 59 242 / 6%) 0%, transparent 65%)', layout: 'hero-list' },
+  { gradient: 'radial-gradient(ellipse 70% 55% at 50% 100%, rgb(0 125 165 / 14%) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 15% 15%, rgb(126 59 242 / 6%) 0%, transparent 65%)', layout: 'hero-list' },
   { gradient: 'radial-gradient(ellipse 65% 55% at 75% 55%, rgb(20 115 230 / 12%) 0%, transparent 65%), radial-gradient(ellipse 40% 35% at 10% 80%, rgb(126 59 242 / 6%) 0%, transparent 60%)', layout: 'list' },
-  { gradient: 'radial-gradient(ellipse 65% 55% at 25% 45%, rgb(126 59 242 / 10%) 0%, transparent 65%), radial-gradient(ellipse 40% 30% at 85% 20%, rgb(250 15 0 / 5%) 0%, transparent 60%)', layout: 'hero-list' },
-  { gradient: 'radial-gradient(ellipse 65% 55% at 65% 35%, rgb(242 92 5 / 12%) 0%, transparent 65%), radial-gradient(ellipse 40% 35% at 15% 75%, rgb(250 15 0 / 8%) 0%, transparent 60%)', layout: 'hero-list' },
-  { gradient: 'radial-gradient(ellipse 65% 55% at 50% 60%, rgb(20 115 230 / 10%) 0%, transparent 65%), radial-gradient(ellipse 35% 30% at 85% 85%, rgb(250 15 0 / 6%) 0%, transparent 60%)', layout: 'list' },
+  { gradient: 'radial-gradient(ellipse 65% 55% at 25% 45%, rgb(126 59 242 / 10%) 0%, transparent 65%), radial-gradient(ellipse 40% 30% at 85% 20%, rgb(0 125 165 / 5%) 0%, transparent 60%)', layout: 'hero-list' },
+  { gradient: 'radial-gradient(ellipse 65% 55% at 65% 35%, rgb(0 125 165 / 12%) 0%, transparent 65%), radial-gradient(ellipse 40% 35% at 15% 75%, rgb(0 125 165 / 8%) 0%, transparent 60%)', layout: 'hero-list' },
+  { gradient: 'radial-gradient(ellipse 65% 55% at 50% 60%, rgb(20 115 230 / 10%) 0%, transparent 65%), radial-gradient(ellipse 35% 30% at 85% 85%, rgb(0 125 165 / 6%) 0%, transparent 60%)', layout: 'list' },
 ];
 
 const INVISIBLE_RE = /[\u00a0\s]/g;
@@ -13,8 +13,12 @@ const LAYOUT_PARAGRAPH_RE = /^layout:\s*(quote|scripture|list|hero-list|title)\s
 
 const LAYOUTS_WITH_BR_SPLIT = new Set(['list', 'hero-list', 'scripture']);
 
+/** Paragraphs worth keeping / animating (non-whitespace text or embedded media). */
+const EMBEDDED_MEDIA_SEL = 'img, picture, video, iframe, object, svg, audio';
+
 function isVisibleParagraph(p) {
-  return p.textContent.replace(INVISIBLE_RE, '').length > 0;
+  if (p.textContent.replace(INVISIBLE_RE, '').length > 0) return true;
+  return p.querySelector(EMBEDDED_MEDIA_SEL) != null;
 }
 
 /**
@@ -36,30 +40,39 @@ function extractAndStripLayoutParagraph(row) {
   return m ? m[1].toLowerCase() : null;
 }
 
-function applyDeckObsMode(block) {
+/**
+ * Enables --deck-ui-scale via URL or block variant class `large` (see README).
+ * EDS keeps the first block class as `slide` for loading; `large` must be an extra class.
+ */
+function applyDeckLargeMode(block) {
   const params = new URLSearchParams(window.location.search);
-  const obsParam = params.get('obs');
-  const fromUrl = obsParam === '1'
-    || obsParam === 'true'
-    || params.get('deck') === 'large';
-  const fromBlock = ['obs', 'large'].some((c) => block.classList.contains(c));
+  const fromUrl = params.get('deck') === 'large'
+    || params.get('large') === '1'
+    || params.get('large') === 'true';
+  const fromBlock = block.classList.contains('large');
   if (fromUrl || fromBlock) {
-    document.documentElement.classList.add('slide-deck-obs');
+    document.documentElement.classList.add('slide-deck-large');
   }
 }
 
 function configureSection(row, i) {
   row.classList.add('slide-section');
   if (i > 0) row.dataset.index = String(i).padStart(2, '0');
-  const config = SECTION_CONFIG[i] || {};
-  if (config.gradient) row.style.setProperty('--section-bg', config.gradient);
-  if (config.layout) row.dataset.layout = config.layout;
-  return config;
+  const explicit = SECTION_CONFIG[i];
+  const cycled = SECTION_CONFIG[i % SECTION_CONFIG.length] || {};
+  if (explicit?.gradient) {
+    row.style.setProperty('--section-bg', explicit.gradient);
+  } else if (cycled.gradient) {
+    row.style.setProperty('--section-bg', cycled.gradient);
+  }
+  if (explicit?.layout) row.dataset.layout = explicit.layout;
+  return explicit || {};
 }
 
 function splitBrParagraphs(row) {
   [...row.querySelectorAll('p')].forEach((p) => {
     if (!p.querySelector('br')) return;
+    const hadVisible = isVisibleParagraph(p);
     const lines = [[]];
     [...p.childNodes].forEach((node) => {
       if (node.nodeType === 1 && node.tagName === 'BR') {
@@ -74,39 +87,38 @@ function splitBrParagraphs(row) {
       nodes.forEach((n) => newP.appendChild(n));
       if (isVisibleParagraph(newP)) frag.appendChild(newP);
     });
+    if (frag.childNodes.length === 0) {
+      if (hadVisible) return;
+      p.remove();
+      return;
+    }
     p.replaceWith(frag);
   });
 }
 
 function markParagraphDelays(row) {
   const paras = [...row.querySelectorAll('p')].filter(isVisibleParagraph);
+  const noHeadline = !row.querySelector('h1, h2');
+  if (noHeadline) row.classList.add('slide-no-headline');
+  const base = noHeadline ? 0.05 : 0.14;
+  const step = noHeadline ? 0.035 : 0.065;
   paras.forEach((p, j) => {
-    p.style.setProperty('--p-delay', `${0.2 + j * 0.08}s`);
+    p.style.setProperty('--p-delay', `${(base + j * step).toFixed(3)}s`);
   });
-  const lastPara = paras[paras.length - 1];
-  if (lastPara) lastPara.classList.add('slide-last-p');
 }
 
-function staggerHeadline(h) {
-  const text = h.textContent;
-  h.textContent = '';
-  let charIndex = 0;
-  text.split(/(\s+)/).forEach((chunk) => {
-    if (/^\s+$/.test(chunk)) {
-      h.appendChild(document.createTextNode(' '));
-      return;
+/** IO does not always fire on first paint; unstick slides that are already on screen. */
+function revealSectionsAlreadyOnScreen(sections) {
+  const vh = window.innerHeight || document.documentElement.clientHeight || 1;
+  sections.forEach((el) => {
+    if (el.classList.contains('is-visible')) return;
+    const r = el.getBoundingClientRect();
+    const h = Math.max(1, r.height);
+    const overlap = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+    const ratio = overlap / h;
+    if (ratio >= 0.18 || (r.top < vh * 0.72 && r.bottom > vh * 0.2)) {
+      el.classList.add('is-visible');
     }
-    const word = document.createElement('span');
-    word.className = 'slide-word';
-    [...chunk].forEach((ch) => {
-      const c = document.createElement('span');
-      c.className = 'slide-char';
-      c.textContent = ch;
-      c.style.setProperty('--char-i', charIndex);
-      charIndex += 1;
-      word.appendChild(c);
-    });
-    h.appendChild(word);
   });
 }
 
@@ -119,7 +131,7 @@ function wireScrollReveal(sections) {
         }
       });
     },
-    { threshold: 0.5 },
+    { threshold: [0, 0.15, 0.35] },
   );
   sections.forEach((s) => observer.observe(s));
 }
@@ -150,7 +162,7 @@ function wireNavigation(sections) {
 }
 
 export default function decorate(block) {
-  applyDeckObsMode(block);
+  applyDeckLargeMode(block);
 
   const sections = [...block.children];
 
@@ -165,9 +177,11 @@ export default function decorate(block) {
     }
 
     markParagraphDelays(row);
-    row.querySelectorAll('h1, h2').forEach(staggerHeadline);
   });
 
   wireScrollReveal(sections);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => revealSectionsAlreadyOnScreen(sections));
+  });
   wireNavigation(sections);
 }

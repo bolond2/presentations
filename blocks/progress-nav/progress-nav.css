@@ -1,6 +1,6 @@
 /* ─── progress-nav — editorial timeline (spine + labeled dots) ─── */
 
-/* Scales with --deck-ui-scale from slide deck (1 default, 1.5 = 50% larger for Slide (obs) / ?obs=). */
+/* Scales with --deck-ui-scale from slide deck (1 default, 1.5 = 50% larger for Slide (large) / ?deck=large). */
 
 .progress-nav {
   position: fixed;
@@ -67,14 +67,14 @@
 }
 
 .progress-nav-item.active .progress-nav-dot {
-  background: #fa0f00;
-  border-color: #fa0f00;
-  box-shadow: 0 0 calc(12px * var(--deck-ui-scale, 1)) rgb(250 15 0 / 70%);
+  background: #007da5;
+  border-color: #007da5;
+  box-shadow: 0 0 calc(12px * var(--deck-ui-scale, 1)) rgb(0 125 165 / 70%);
   transform: scale(1.3);
 }
 
 .progress-nav-item.active .progress-nav-label {
-  color: #fa0f00;
+  color: #007da5;
 }
 
 .progress-nav-item.active .progress-nav-num {

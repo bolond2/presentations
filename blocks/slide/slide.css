@@ -5,9 +5,9 @@
 
 :root {
   --slide-bg: #0c0c0e;
-  --slide-accent: #fa0f00;
-  --slide-accent-warm: #f25c05;
-  --slide-accent-blue: #1473e6;
+  --slide-accent: #007da5;
+  --slide-accent-warm: #00a3c4;
+  --slide-accent-blue: #00acc1;
   --slide-accent-purple: #7e3bf2;
   --slide-text: #f4f4f4;
   --slide-muted: #5a5a5a;
@@ -18,31 +18,42 @@
 }
 
 /* Typography tokens + page scroll when slide block present.
-   --deck-ui-scale: 1 default; Slide (obs) / ?obs= sets 1.5 = 50% larger slide + progress-nav together. */
+   --deck-ui-scale: 1 default; Slide (large) / ?deck=large sets 1.5 — body + lists scale too (Zoom-friendly). */
 body:has(.slide) {
   --deck-ui-scale: 1;
+
+  /* Main column width: wide rail for Zoom + large monitors; tweak if needed */
+  --slide-content-max: min(1800px, 96vw);
   --slide-fs-h1: clamp(calc(3rem * var(--deck-ui-scale)), calc(7vw * var(--deck-ui-scale)), calc(7rem * var(--deck-ui-scale)));
   --slide-fs-h2: clamp(calc(2.5rem * var(--deck-ui-scale)), calc(5.5vw * var(--deck-ui-scale)), calc(5.5rem * var(--deck-ui-scale)));
-  --slide-fs-p: clamp(calc(1rem * var(--deck-ui-scale)), calc(1.8vw * var(--deck-ui-scale)), calc(1.25rem * var(--deck-ui-scale)));
-  --slide-max-p: calc(720px * var(--deck-ui-scale));
-  --slide-fs-li: clamp(calc(0.8rem * var(--deck-ui-scale)), calc(1.4vw * var(--deck-ui-scale)), calc(0.95rem * var(--deck-ui-scale)));
-  --slide-max-ul: calc(620px * var(--deck-ui-scale));
-  --slide-fs-list-p: clamp(calc(0.8rem * var(--deck-ui-scale)), calc(1.25vw * var(--deck-ui-scale)), calc(0.92rem * var(--deck-ui-scale)));
-  --slide-fs-list-last: clamp(calc(0.9rem * var(--deck-ui-scale)), calc(1.5vw * var(--deck-ui-scale)), calc(1.05rem * var(--deck-ui-scale)));
+
+  /* Paragraph / reading sizes (scale together; default 0.8 of prior boilerplate sizes) */
+  --slide-copy-scale: 0.8;
+
+  /* Body: large for low-res / picture-in-picture; vmin tracks small window edge (video call share) */
+  --slide-fs-p: clamp(calc(1.75rem * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.75vmin * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.5rem * var(--deck-ui-scale) * var(--slide-copy-scale)));
+
+  /* Body copy and lists use full slide rail (--slide-content-max on parent) */
+  --slide-max-p: 100%;
+  --slide-fs-li: clamp(calc(1.45rem * var(--deck-ui-scale)), calc(3vmin * var(--deck-ui-scale)), calc(2.75rem * var(--deck-ui-scale)));
+  --slide-max-ul: 100%;
+  --slide-fs-list-p: clamp(calc(1.45rem * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3vmin * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(2.65rem * var(--deck-ui-scale) * var(--slide-copy-scale)));
   --slide-fs-index: clamp(calc(6rem * var(--deck-ui-scale)), calc(12vw * var(--deck-ui-scale)), calc(14rem * var(--deck-ui-scale)));
-  --slide-quote-p: clamp(calc(1.5rem * var(--deck-ui-scale)), calc(3vmin * var(--deck-ui-scale)), calc(3.75rem * var(--deck-ui-scale)));
-  --slide-scripture-p: clamp(calc(1.35rem * var(--deck-ui-scale)), calc(2.75vmin * var(--deck-ui-scale)), calc(3.25rem * var(--deck-ui-scale)));
+  --slide-quote-p: clamp(calc(1.85rem * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.6vmin * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.65rem * var(--deck-ui-scale) * var(--slide-copy-scale)));
+  --slide-scripture-p: clamp(calc(1.7rem * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.35vmin * var(--deck-ui-scale) * var(--slide-copy-scale)), calc(3.35rem * var(--deck-ui-scale) * var(--slide-copy-scale)));
   --slide-img-max-h: min(calc(52vh * var(--deck-ui-scale)), calc(720px * var(--deck-ui-scale)));
+
+  /* Room for fixed progress-nav (rail + labels); applied in rules below when .progress-nav exists */
+  --slide-progress-nav-reserve: calc(52px * var(--deck-ui-scale) + min(15rem, 24vw));
 
   background: var(--slide-bg);
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
 }
 
-/* OBS / large: same deck, 50% larger UI (--deck-ui-scale 1.5) on slide type + progress-nav */
-body:has(.slide.obs),
+/* Large deck: 50% larger UI (--deck-ui-scale 1.5) on slide + progress-nav */
 body:has(.slide.large),
-html.slide-deck-obs body:has(.slide) {
+html.slide-deck-large body:has(.slide) {
   --deck-ui-scale: 1.5;
 }
 
@@ -50,7 +61,7 @@ body:has(.slide) footer {
   display: none;
 }
 
-/* Adobe signature red stripe — top of page */
+/* Accent stripe — top of page */
 body:has(.slide)::before {
   content: '';
   position: fixed;
@@ -58,7 +69,7 @@ body:has(.slide)::before {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #fa0f00 0%, #c32f1e 50%, #fa0f00 100%);
+  background: linear-gradient(90deg, #007da5 0%, #005a78 50%, #007da5 100%);
   z-index: 9999;
 }
 
@@ -128,14 +139,14 @@ body:has(.slide)::before {
   z-index: 2;
 }
 
-/* EDS wraps each cell in a div — left-aligned reading column */
+/* EDS wraps each cell in a div — stretch children to full rail width */
 .slide-section > div {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   text-align: left;
   width: 100%;
-  max-width: min(52rem, 94vw);
+  max-width: var(--slide-content-max);
 }
 
 /* ─── section number badge ─── */
@@ -164,11 +175,17 @@ body:has(.slide)::before {
   line-height: 0.95;
   letter-spacing: 0.03em;
   color: var(--slide-text);
-  max-width: 1100px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 0 32px;
   text-align: left;
-  align-self: flex-start;
+  align-self: stretch;
   text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slide-section h2 {
@@ -177,11 +194,72 @@ body:has(.slide)::before {
   line-height: 1;
   letter-spacing: 0.02em;
   color: var(--slide-text);
-  max-width: 1000px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 0 28px;
   text-align: left;
-  align-self: flex-start;
+  align-self: stretch;
   text-transform: none;
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-section h3 {
+  font-family: var(--slide-display);
+  font-size: clamp(calc(1.65rem * var(--deck-ui-scale)), calc(4.2vmin * var(--deck-ui-scale)), calc(2.85rem * var(--deck-ui-scale)));
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--slide-text);
+  max-width: 100%;
+  width: 100%;
+  margin: 0 0 20px;
+  text-align: left;
+  align-self: stretch;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-section h4,
+.slide-section h5,
+.slide-section h6 {
+  font-family: var(--slide-body);
+  font-size: var(--slide-fs-p);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--slide-text);
+  margin: 0 0 14px;
+  text-align: left;
+  align-self: stretch;
+  max-width: 100%;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-section.is-visible h1,
+.slide-section.is-visible h2,
+.slide-section.is-visible h3,
+.slide-section.is-visible h4,
+.slide-section.is-visible h5,
+.slide-section.is-visible h6 {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.06s;
+}
+
+/* Explicit italic (span often carries italics from Word via inline style) */
+.slide-section em {
+  font-style: italic;
 }
 
 /* accent color on first word via JS-injected span */
@@ -195,29 +273,36 @@ body:has(.slide)::before {
   font-size: var(--slide-fs-p);
   font-weight: 400;
   max-width: var(--slide-max-p);
-  line-height: 1.75;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.45;
   color: rgb(244 244 244 / 72%);
-  margin: 0 0 16px;
+  margin: 0 0 0.75em;
   letter-spacing: 0.01em;
   text-align: left;
 }
 
-/* ─── reveal animations (base p/ul — before layout-specific p) ─── */
+/* ─── reveal animations (body copy and block elements) ─── */
 
 .slide-section p,
-.slide-section ul {
+.slide-section ul,
+.slide-section ol,
+.slide-section blockquote {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(22px);
   transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── quote / scripture reading layouts (lesson-style) ─── */
 
 .slide-section[data-layout='quote'] > div {
-  max-width: min(50em, 94vw);
-  align-items: flex-start;
+  max-width: var(--slide-content-max);
+  align-items: stretch;
   text-align: left;
 }
 
@@ -225,7 +310,7 @@ body:has(.slide)::before {
   font-family: var(--slide-reading);
   font-size: var(--slide-quote-p);
   line-height: 1.35;
-  max-width: min(50em, 94vw);
+  max-width: 100%;
   color: rgb(244 244 244 / 88%);
   text-align: left;
 }
@@ -233,15 +318,7 @@ body:has(.slide)::before {
 .slide-section[data-layout='quote'] .slide-author,
 .slide-section[data-layout='quote'] .author,
 .slide-section[data-layout='scripture'] .slide-author,
-.slide-section[data-layout='scripture'] .author {
-  display: block;
-  margin-top: 0.8em;
-  font-size: 0.6em;
-  font-family: var(--slide-body);
-  letter-spacing: 0.04em;
-  color: rgb(244 244 244 / 55%);
-}
-
+.slide-section[data-layout='scripture'] .author,
 .slide-section[data-layout='quote'] p .slide-author,
 .slide-section[data-layout='quote'] p .author,
 .slide-section[data-layout='scripture'] p .slide-author,
@@ -259,23 +336,24 @@ body:has(.slide)::before {
 }
 
 .slide-section[data-layout='scripture'] > div {
-  align-items: flex-start;
+  align-items: stretch;
   text-align: left;
-  max-width: min(50em, 94vw);
+  max-width: var(--slide-content-max);
   margin-inline: 0;
 }
 
 .slide-section[data-layout='scripture'] h1,
 .slide-section[data-layout='scripture'] h2 {
   text-align: left;
-  align-self: flex-start;
+  align-self: stretch;
+  width: 100%;
 }
 
 .slide-section[data-layout='scripture'] p {
   font-family: var(--slide-reading);
   font-size: var(--slide-scripture-p);
   line-height: 1.35;
-  max-width: min(50em, 94vw);
+  max-width: 100%;
   color: rgb(244 244 244 / 88%);
   text-align: left;
 }
@@ -287,6 +365,8 @@ body:has(.slide)::before {
   padding: 0;
   margin: 0 0 28px;
   max-width: var(--slide-max-ul);
+  width: 100%;
+  box-sizing: border-box;
   text-align: left;
 }
 
@@ -307,6 +387,14 @@ body:has(.slide)::before {
   left: 0;
   color: var(--slide-accent);
   opacity: 0.7;
+}
+
+/* Softer motion when there is no h1/h2 (body-only slides) */
+.slide-section.slide-no-headline p,
+.slide-section.slide-no-headline ul,
+.slide-section.slide-no-headline ol {
+  transform: translateY(12px);
+  transition-duration: 0.42s;
 }
 
 /* ─── inline code ─── */
@@ -338,6 +426,17 @@ body:has(.slide)::before {
   display: block;
   margin: 0;
   max-width: 100%;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-section.is-visible > div > picture {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.12s;
 }
 
 .slide .slide-section picture img,
@@ -351,29 +450,16 @@ body:has(.slide)::before {
   object-fit: contain;
 }
 
-/* ─── headline char-stagger reveal ─── */
+/* ─── highlighter on bold + callout phrases (strikethrough from Word/Docs → use same mark, no line-through) ─── */
 
-.slide-word {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.slide-char {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(0.4em);
-  transition:
-    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(var(--char-i) * 22ms + 0.1s);
-  will-change: opacity, transform;
-}
-
-/* ─── highlighter on bold phrases ─── */
-
-.slide-section strong {
+.slide-section strong,
+.slide-section del,
+.slide-section s,
+.slide-section strike,
+.slide-section span[style*='line-through' i] {
   font-weight: inherit;
-  background-image: linear-gradient(transparent 55%, rgb(250 15 0 / 38%) 55%, rgb(250 15 0 / 38%) 92%, transparent 92%);
+  text-decoration: none !important;
+  background-image: linear-gradient(transparent 55%, rgb(0 125 165 / 38%) 55%, rgb(0 125 165 / 38%) 92%, transparent 92%);
   background-size: 0% 100%;
   background-repeat: no-repeat;
   background-position: 0 0;
@@ -382,16 +468,24 @@ body:has(.slide)::before {
   transition-delay: 0.9s;
 }
 
+.slide-section.is-visible strong,
+.slide-section.is-visible del,
+.slide-section.is-visible s,
+.slide-section.is-visible strike,
+.slide-section.is-visible span[style*='line-through' i] {
+  background-size: 100% 100%;
+}
+
 /* ─── list layout — left-aligned block with › arrows ─── */
 
 .slide-section[data-layout='list'] > div {
-  align-items: flex-start;
-  max-width: 600px;
+  align-items: stretch;
+  max-width: 100%;
 }
 
 .slide-section[data-layout='list'] h1,
 .slide-section[data-layout='list'] h2 {
-  align-self: flex-start;
+  align-self: stretch;
   text-align: left;
   width: 100%;
 }
@@ -399,8 +493,8 @@ body:has(.slide)::before {
 .slide-section[data-layout='list'] p,
 .slide-section[data-layout='hero-list'] p {
   text-align: left;
-  width: 560px;
-  max-width: 90vw;
+  width: 100%;
+  max-width: 100%;
   margin: 0 0 4px;
   font-size: var(--slide-fs-list-p);
   color: rgb(244 244 244 / 55%);
@@ -422,43 +516,48 @@ body:has(.slide)::before {
   line-height: inherit;
 }
 
-.slide-section[data-layout='list'] p.slide-last-p,
-.slide-section[data-layout='hero-list'] p.slide-last-p {
-  color: var(--slide-accent);
-  font-size: var(--slide-fs-list-last);
-  margin-top: 32px;
-  padding-left: 0;
-  padding-top: 24px;
-  letter-spacing: 0.07em;
-  width: 560px;
-  max-width: 90vw;
-  border-top: 1px solid rgb(250 15 0 / 20%);
-}
-
-.slide-section[data-layout='list'] p.slide-last-p::before,
-.slide-section[data-layout='hero-list'] p.slide-last-p::before {
-  display: none;
-}
-
-.slide-section.is-visible .slide-char {
-  opacity: 1;
-  transform: none;
-}
-
-.slide-section.is-visible strong {
-  background-size: 100% 100%;
-}
-
 .slide-section.is-visible p {
   opacity: 1;
   transform: none;
   transition-delay: var(--p-delay, 0.2s);
 }
 
-.slide-section.is-visible ul {
+.slide-section.is-visible ul,
+.slide-section.is-visible ol,
+.slide-section.is-visible blockquote {
   opacity: 1;
   transform: none;
-  transition-delay: 0.22s;
+  transition-delay: 0.16s;
+}
+
+/* Blockquotes are readings, not talking-point lines — wider measure, no › (overrides list/hero-list p) */
+.slide-section[data-layout='list'] blockquote,
+.slide-section[data-layout='hero-list'] blockquote {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: border-box;
+}
+
+.slide-section[data-layout='list'] blockquote p,
+.slide-section[data-layout='hero-list'] blockquote p {
+  max-width: none;
+  width: 100%;
+  padding-left: 0;
+  margin: 0 0 0.85em;
+  font-family: var(--slide-reading);
+  font-size: var(--slide-scripture-p);
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: rgb(244 244 244 / 88%);
+}
+
+.slide-section[data-layout='list'] blockquote p::before,
+.slide-section[data-layout='hero-list'] blockquote p::before {
+  content: none;
+  display: none;
 }
 
 /* ─── mobile ─── */
@@ -478,26 +577,26 @@ body:has(.slide)::before {
     max-width: 100%;
   }
 
-  .slide-section[data-layout='list'] p.slide-last-p,
-  .slide-section[data-layout='hero-list'] p.slide-last-p {
-    width: 100%;
-    max-width: 100%;
-  }
-
   .slide-section[data-index]::before {
     bottom: 20px;
     right: 16px;
   }
 }
 
-@media (width >= 900px) {
-  .slide-section[data-layout='list'] p,
-  .slide-section[data-layout='hero-list'] p {
-    width: min(560px, 90vw);
+/* Boilerplate caps `main > .section > div` at 1200px — widen rail on slide pages */
+body:has(.slide) main > .section > div {
+  max-width: var(--slide-content-max);
+  margin-inline: auto;
+  padding-inline: clamp(12px, 2vw, 28px);
+}
+
+@media (width > 640px) {
+  /* progress-nav is visible — extra right inset so copy doesn’t run under the rail */
+  body:has(.slide):has(.progress-nav) .slide-section {
+    padding-right: max(3rem, var(--slide-progress-nav-reserve));
   }
 
-  .slide-section[data-layout='list'] p.slide-last-p,
-  .slide-section[data-layout='hero-list'] p.slide-last-p {
-    width: min(560px, 90vw);
+  body:has(.slide):has(.progress-nav) main > .section > div {
+    padding-right: max(28px, min(3.5rem, var(--slide-progress-nav-reserve)));
   }
 }

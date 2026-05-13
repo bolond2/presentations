@@ -27,7 +27,8 @@ function getSlideSectionsWhenReady() {
     observer = new MutationObserver(() => {
       if (found().length) finish();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    const observeRoot = document.querySelector('main') || document.body;
+    observer.observe(observeRoot, { childList: true, subtree: true });
     timeoutId = window.setTimeout(finish, 30000);
   });
 }
