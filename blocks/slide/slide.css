@@ -1,4 +1,4 @@
-/* Presentation typefaces — Source Sans 3 (Adobe-open UI sans) + Barlow Condensed (deck headlines) via Google Fonts */
+/* Presentation typefaces — Source Sans 3 + Barlow Condensed via Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap');
 
 /* ─── slide block — Adobe dark premium presentation design ─── */
@@ -14,14 +14,36 @@
   --slide-display: 'Barlow Condensed', var(--heading-font-family);
   --slide-body: 'Source Sans 3', var(--body-font-family);
   --slide-mono: 'Source Code Pro', ui-monospace, 'Cascadia Code', 'SF Mono', menlo, consolas, monospace;
+  --slide-reading: georgia, 'Times New Roman', times, serif;
 }
 
-/* ─── page scroll behavior when slide block present ─── */
-
+/* Typography tokens + page scroll when slide block present.
+   --deck-ui-scale: 1 default; Slide (obs) / ?obs= sets 1.5 = 50% larger slide + progress-nav together. */
 body:has(.slide) {
+  --deck-ui-scale: 1;
+  --slide-fs-h1: clamp(calc(3rem * var(--deck-ui-scale)), calc(7vw * var(--deck-ui-scale)), calc(7rem * var(--deck-ui-scale)));
+  --slide-fs-h2: clamp(calc(2.5rem * var(--deck-ui-scale)), calc(5.5vw * var(--deck-ui-scale)), calc(5.5rem * var(--deck-ui-scale)));
+  --slide-fs-p: clamp(calc(1rem * var(--deck-ui-scale)), calc(1.8vw * var(--deck-ui-scale)), calc(1.25rem * var(--deck-ui-scale)));
+  --slide-max-p: calc(720px * var(--deck-ui-scale));
+  --slide-fs-li: clamp(calc(0.8rem * var(--deck-ui-scale)), calc(1.4vw * var(--deck-ui-scale)), calc(0.95rem * var(--deck-ui-scale)));
+  --slide-max-ul: calc(620px * var(--deck-ui-scale));
+  --slide-fs-list-p: clamp(calc(0.8rem * var(--deck-ui-scale)), calc(1.25vw * var(--deck-ui-scale)), calc(0.92rem * var(--deck-ui-scale)));
+  --slide-fs-list-last: clamp(calc(0.9rem * var(--deck-ui-scale)), calc(1.5vw * var(--deck-ui-scale)), calc(1.05rem * var(--deck-ui-scale)));
+  --slide-fs-index: clamp(calc(6rem * var(--deck-ui-scale)), calc(12vw * var(--deck-ui-scale)), calc(14rem * var(--deck-ui-scale)));
+  --slide-quote-p: clamp(calc(1.5rem * var(--deck-ui-scale)), calc(3vmin * var(--deck-ui-scale)), calc(3.75rem * var(--deck-ui-scale)));
+  --slide-scripture-p: clamp(calc(1.35rem * var(--deck-ui-scale)), calc(2.75vmin * var(--deck-ui-scale)), calc(3.25rem * var(--deck-ui-scale)));
+  --slide-img-max-h: min(calc(52vh * var(--deck-ui-scale)), calc(720px * var(--deck-ui-scale)));
+
   background: var(--slide-bg);
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
+}
+
+/* OBS / large: same deck, 50% larger UI (--deck-ui-scale 1.5) on slide type + progress-nav */
+body:has(.slide.obs),
+body:has(.slide.large),
+html.slide-deck-obs body:has(.slide) {
+  --deck-ui-scale: 1.5;
 }
 
 body:has(.slide) footer {
@@ -60,13 +82,13 @@ body:has(.slide)::before {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   min-height: 100vh;
   padding: 80px 48px;
   box-sizing: border-box;
   scroll-snap-align: start;
-  text-align: center;
+  text-align: left;
   overflow: hidden;
   background: var(--section-bg, var(--slide-bg)), var(--slide-bg);
 }
@@ -106,13 +128,14 @@ body:has(.slide)::before {
   z-index: 2;
 }
 
-/* EDS wraps each cell in a div — force it to center like the section itself */
+/* EDS wraps each cell in a div — left-aligned reading column */
 .slide-section > div {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   width: 100%;
+  max-width: min(52rem, 94vw);
 }
 
 /* ─── section number badge ─── */
@@ -123,7 +146,7 @@ body:has(.slide)::before {
   bottom: 48px;
   right: 56px;
   font-family: var(--slide-display);
-  font-size: clamp(6rem, 12vw, 14rem);
+  font-size: var(--slide-fs-index);
   line-height: 1;
   color: transparent;
   -webkit-text-stroke: 1px rgb(255 255 255 / 6%);
@@ -137,23 +160,27 @@ body:has(.slide)::before {
 
 .slide-section h1 {
   font-family: var(--slide-display);
-  font-size: clamp(3rem, 7vw, 7rem);
+  font-size: var(--slide-fs-h1);
   line-height: 0.95;
   letter-spacing: 0.03em;
   color: var(--slide-text);
   max-width: 1100px;
   margin: 0 0 32px;
+  text-align: left;
+  align-self: flex-start;
   text-transform: uppercase;
 }
 
 .slide-section h2 {
   font-family: var(--slide-display);
-  font-size: clamp(2.5rem, 5.5vw, 5.5rem);
+  font-size: var(--slide-fs-h2);
   line-height: 1;
   letter-spacing: 0.02em;
   color: var(--slide-text);
   max-width: 1000px;
   margin: 0 0 28px;
+  text-align: left;
+  align-self: flex-start;
   text-transform: none;
 }
 
@@ -165,13 +192,92 @@ body:has(.slide)::before {
 
 .slide-section p {
   font-family: var(--slide-body);
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: var(--slide-fs-p);
   font-weight: 400;
-  max-width: 720px;
+  max-width: var(--slide-max-p);
   line-height: 1.75;
   color: rgb(244 244 244 / 72%);
   margin: 0 0 16px;
   letter-spacing: 0.01em;
+  text-align: left;
+}
+
+/* ─── reveal animations (base p/ul — before layout-specific p) ─── */
+
+.slide-section p,
+.slide-section ul {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── quote / scripture reading layouts (lesson-style) ─── */
+
+.slide-section[data-layout='quote'] > div {
+  max-width: min(50em, 94vw);
+  align-items: flex-start;
+  text-align: left;
+}
+
+.slide-section[data-layout='quote'] p {
+  font-family: var(--slide-reading);
+  font-size: var(--slide-quote-p);
+  line-height: 1.35;
+  max-width: min(50em, 94vw);
+  color: rgb(244 244 244 / 88%);
+  text-align: left;
+}
+
+.slide-section[data-layout='quote'] .slide-author,
+.slide-section[data-layout='quote'] .author,
+.slide-section[data-layout='scripture'] .slide-author,
+.slide-section[data-layout='scripture'] .author {
+  display: block;
+  margin-top: 0.8em;
+  font-size: 0.6em;
+  font-family: var(--slide-body);
+  letter-spacing: 0.04em;
+  color: rgb(244 244 244 / 55%);
+}
+
+.slide-section[data-layout='quote'] p .slide-author,
+.slide-section[data-layout='quote'] p .author,
+.slide-section[data-layout='scripture'] p .slide-author,
+.slide-section[data-layout='scripture'] p .author {
+  display: block;
+  margin-top: 0.8em;
+  font-size: 0.6em;
+  font-family: var(--slide-body);
+  letter-spacing: 0.04em;
+  color: rgb(244 244 244 / 55%);
+}
+
+.slide-section[data-layout='scripture'] {
+  text-align: left;
+}
+
+.slide-section[data-layout='scripture'] > div {
+  align-items: flex-start;
+  text-align: left;
+  max-width: min(50em, 94vw);
+  margin-inline: 0;
+}
+
+.slide-section[data-layout='scripture'] h1,
+.slide-section[data-layout='scripture'] h2 {
+  text-align: left;
+  align-self: flex-start;
+}
+
+.slide-section[data-layout='scripture'] p {
+  font-family: var(--slide-reading);
+  font-size: var(--slide-scripture-p);
+  line-height: 1.35;
+  max-width: min(50em, 94vw);
+  color: rgb(244 244 244 / 88%);
+  text-align: left;
 }
 
 /* ─── lists (static bullets / talking points) ─── */
@@ -180,13 +286,13 @@ body:has(.slide)::before {
   list-style: none;
   padding: 0;
   margin: 0 0 28px;
-  max-width: 620px;
+  max-width: var(--slide-max-ul);
   text-align: left;
 }
 
 .slide-section ul li {
   font-family: var(--slide-body);
-  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  font-size: var(--slide-fs-li);
   font-weight: 400;
   color: rgb(244 244 244 / 60%);
   padding: 8px 0 8px 24px;
@@ -222,20 +328,27 @@ body:has(.slide)::before {
   width: 48px;
   height: 2px;
   background: var(--slide-accent);
-  margin: 24px auto;
+  margin: 24px 0;
   display: block;
 }
 
+/* ─── images (scoped to slide sections) ─── */
 
-/* ─── reveal animations ─── */
+.slide .slide-section picture {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+}
 
-.slide-section p,
-.slide-section ul {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+.slide .slide-section picture img,
+.slide .slide-section > div img {
+  display: block;
+  margin-inline: 0;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: var(--slide-img-max-h);
+  object-fit: contain;
 }
 
 /* ─── headline char-stagger reveal ─── */
@@ -271,25 +384,25 @@ body:has(.slide)::before {
 
 /* ─── list layout — left-aligned block with › arrows ─── */
 
-.slide-section[data-layout="list"] > div {
+.slide-section[data-layout='list'] > div {
   align-items: flex-start;
   max-width: 600px;
 }
 
-.slide-section[data-layout="list"] h1,
-.slide-section[data-layout="list"] h2 {
+.slide-section[data-layout='list'] h1,
+.slide-section[data-layout='list'] h2 {
   align-self: flex-start;
   text-align: left;
   width: 100%;
 }
 
-.slide-section[data-layout="list"] p,
-.slide-section[data-layout="hero-list"] p {
+.slide-section[data-layout='list'] p,
+.slide-section[data-layout='hero-list'] p {
   text-align: left;
   width: 560px;
   max-width: 90vw;
   margin: 0 0 4px;
-  font-size: clamp(0.8rem, 1.25vw, 0.92rem);
+  font-size: var(--slide-fs-list-p);
   color: rgb(244 244 244 / 55%);
   padding-left: 20px;
   position: relative;
@@ -298,8 +411,8 @@ body:has(.slide)::before {
   box-sizing: border-box;
 }
 
-.slide-section[data-layout="list"] p::before,
-.slide-section[data-layout="hero-list"] p::before {
+.slide-section[data-layout='list'] p::before,
+.slide-section[data-layout='hero-list'] p::before {
   content: '›';
   position: absolute;
   left: 0;
@@ -309,10 +422,10 @@ body:has(.slide)::before {
   line-height: inherit;
 }
 
-.slide-section[data-layout="list"] p.slide-last-p,
-.slide-section[data-layout="hero-list"] p.slide-last-p {
+.slide-section[data-layout='list'] p.slide-last-p,
+.slide-section[data-layout='hero-list'] p.slide-last-p {
   color: var(--slide-accent);
-  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  font-size: var(--slide-fs-list-last);
   margin-top: 32px;
   padding-left: 0;
   padding-top: 24px;
@@ -322,8 +435,8 @@ body:has(.slide)::before {
   border-top: 1px solid rgb(250 15 0 / 20%);
 }
 
-.slide-section[data-layout="list"] p.slide-last-p::before,
-.slide-section[data-layout="hero-list"] p.slide-last-p::before {
+.slide-section[data-layout='list'] p.slide-last-p::before,
+.slide-section[data-layout='hero-list'] p.slide-last-p::before {
   display: none;
 }
 
@@ -355,18 +468,18 @@ body:has(.slide)::before {
     padding: 56px 16px;
   }
 
-  .slide-section[data-layout="list"] > div {
+  .slide-section[data-layout='list'] > div {
     max-width: 100%;
   }
 
-  .slide-section[data-layout="list"] p,
-  .slide-section[data-layout="hero-list"] p {
+  .slide-section[data-layout='list'] p,
+  .slide-section[data-layout='hero-list'] p {
     width: 100%;
     max-width: 100%;
   }
 
-  .slide-section[data-layout="list"] p.slide-last-p,
-  .slide-section[data-layout="hero-list"] p.slide-last-p {
+  .slide-section[data-layout='list'] p.slide-last-p,
+  .slide-section[data-layout='hero-list'] p.slide-last-p {
     width: 100%;
     max-width: 100%;
   }
@@ -374,5 +487,17 @@ body:has(.slide)::before {
   .slide-section[data-index]::before {
     bottom: 20px;
     right: 16px;
+  }
+}
+
+@media (width >= 900px) {
+  .slide-section[data-layout='list'] p,
+  .slide-section[data-layout='hero-list'] p {
+    width: min(560px, 90vw);
+  }
+
+  .slide-section[data-layout='list'] p.slide-last-p,
+  .slide-section[data-layout='hero-list'] p.slide-last-p {
+    width: min(560px, 90vw);
   }
 }

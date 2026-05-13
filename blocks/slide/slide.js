@@ -8,8 +8,44 @@ const SECTION_CONFIG = [
 
 const INVISIBLE_RE = /[\u00a0\s]/g;
 
+/** Entire trimmed text of a paragraph must match (case-insensitive). */
+const LAYOUT_PARAGRAPH_RE = /^layout:\s*(quote|scripture|list|hero-list|title)\s*$/i;
+
+const LAYOUTS_WITH_BR_SPLIT = new Set(['list', 'hero-list', 'scripture']);
+
 function isVisibleParagraph(p) {
   return p.textContent.replace(INVISIBLE_RE, '').length > 0;
+}
+
+/**
+ * Optional per-slide layout: first matching paragraph whose entire text is `layout: <name>`.
+ * Removes that paragraph from the DOM so it is not visible on the deck.
+ * @param {Element} row
+ * @returns {string|null}
+ */
+function extractAndStripLayoutParagraph(row) {
+  const paras = [...row.querySelectorAll('p')];
+  const p = paras.find((el) => {
+    const t = el.textContent.replace(INVISIBLE_RE, ' ').replace(/\s+/g, ' ').trim();
+    return LAYOUT_PARAGRAPH_RE.test(t);
+  });
+  if (!p) return null;
+  const t = p.textContent.replace(INVISIBLE_RE, ' ').replace(/\s+/g, ' ').trim();
+  const m = t.match(LAYOUT_PARAGRAPH_RE);
+  p.remove();
+  return m ? m[1].toLowerCase() : null;
+}
+
+function applyDeckObsMode(block) {
+  const params = new URLSearchParams(window.location.search);
+  const obsParam = params.get('obs');
+  const fromUrl = obsParam === '1'
+    || obsParam === 'true'
+    || params.get('deck') === 'large';
+  const fromBlock = ['obs', 'large'].some((c) => block.classList.contains(c));
+  if (fromUrl || fromBlock) {
+    document.documentElement.classList.add('slide-deck-obs');
+  }
 }
 
 function configureSection(row, i) {
@@ -114,12 +150,17 @@ function wireNavigation(sections) {
 }
 
 export default function decorate(block) {
+  applyDeckObsMode(block);
+
   const sections = [...block.children];
 
   sections.forEach((row, i) => {
-    const config = configureSection(row, i);
+    const layoutHint = extractAndStripLayoutParagraph(row);
+    configureSection(row, i);
+    if (layoutHint) row.dataset.layout = layoutHint;
 
-    if (config.layout === 'list' || config.layout === 'hero-list') {
+    const layout = row.dataset.layout || '';
+    if (LAYOUTS_WITH_BR_SPLIT.has(layout)) {
       splitBrParagraphs(row);
     }
 

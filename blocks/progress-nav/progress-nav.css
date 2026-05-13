@@ -1,12 +1,14 @@
 /* ─── progress-nav — editorial timeline (spine + labeled dots) ─── */
 
+/* Scales with --deck-ui-scale from slide deck (1 default, 1.5 = 50% larger for Slide (obs) / ?obs=). */
+
 .progress-nav {
   position: fixed;
-  right: 36px;
+  right: calc(36px * var(--deck-ui-scale, 1));
   top: 50%;
   transform: translateY(-50%);
   height: 70vh;
-  min-height: 480px;
+  min-height: calc(480px * var(--deck-ui-scale, 1));
   z-index: 100;
 }
 
@@ -14,8 +16,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 5px;
-  width: 1px;
+  right: calc(5px * var(--deck-ui-scale, 1));
+  width: calc(1px * var(--deck-ui-scale, 1));
   background: linear-gradient(180deg, transparent 0%, rgb(255 255 255 / 12%) 10%, rgb(255 255 255 / 12%) 90%, transparent 100%);
 }
 
@@ -24,7 +26,7 @@
   right: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: calc(12px * var(--deck-ui-scale, 1));
   padding: 0;
   background: transparent;
   border: 0;
@@ -34,7 +36,7 @@
 
 .progress-nav-label {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.62rem;
+  font-size: calc(0.62rem * var(--deck-ui-scale, 1));
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 40%);
@@ -44,12 +46,12 @@
 
 .progress-nav-num {
   color: rgb(255 255 255 / 25%);
-  margin-right: 6px;
+  margin-right: calc(6px * var(--deck-ui-scale, 1));
 }
 
 .progress-nav-dot {
-  width: 10px;
-  height: 10px;
+  width: calc(10px * var(--deck-ui-scale, 1));
+  height: calc(10px * var(--deck-ui-scale, 1));
   border-radius: 50%;
   border: 1px solid rgb(255 255 255 / 35%);
   background: #0c0c0e;
@@ -67,7 +69,7 @@
 .progress-nav-item.active .progress-nav-dot {
   background: #fa0f00;
   border-color: #fa0f00;
-  box-shadow: 0 0 12px rgb(250 15 0 / 70%);
+  box-shadow: 0 0 calc(12px * var(--deck-ui-scale, 1)) rgb(250 15 0 / 70%);
   transform: scale(1.3);
 }
 

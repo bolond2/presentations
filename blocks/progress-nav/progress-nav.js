@@ -4,6 +4,34 @@ function readNames(block) {
     .filter((t) => t.length > 0);
 }
 
+/**
+ * Waits until slide sections exist (slide block may load after this block in the same section).
+ * @returns {Promise<Element[]>}
+ */
+function getSlideSectionsWhenReady() {
+  const found = () => [...document.querySelectorAll('.slide-section')];
+  const initial = found();
+  if (initial.length) return Promise.resolve(initial);
+
+  return new Promise((resolve) => {
+    let settled = false;
+    let timeoutId;
+    let observer;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      observer?.disconnect();
+      window.clearTimeout(timeoutId);
+      resolve(found());
+    };
+    observer = new MutationObserver(() => {
+      if (found().length) finish();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    timeoutId = window.setTimeout(finish, 30000);
+  });
+}
+
 function buildItem(section, index, total, name) {
   const item = document.createElement('button');
   item.className = 'progress-nav-item';
@@ -67,11 +95,11 @@ function wireActiveTracking(sections, items) {
   sections.forEach((s) => observer.observe(s));
 }
 
-export default function decorate(block) {
+export default async function decorate(block) {
   const names = readNames(block);
   block.remove();
 
-  const sections = [...document.querySelectorAll('.slide-section')];
+  const sections = await getSlideSectionsWhenReady();
   if (!sections.length) return;
 
   const { nav, items } = buildNav(sections, names);
