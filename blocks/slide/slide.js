@@ -137,28 +137,46 @@ function wireScrollReveal(sections) {
 }
 
 function wireNavigation(sections) {
-  const state = { current: 0 };
+  if (!sections.length) return;
+
+  function indexOfMostVisibleSlide() {
+    const vh = window.innerHeight || document.documentElement.clientHeight || 1;
+    let bestIdx = 0;
+    let bestVisible = -1;
+    sections.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      const overlap = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+      if (overlap > bestVisible) {
+        bestVisible = overlap;
+        bestIdx = i;
+      }
+    });
+    return bestIdx;
+  }
+
+  function arrowShouldControlDeck(e) {
+    const t = e.target;
+    if (!(t instanceof Element)) return true;
+    if (t.closest('input, textarea, select, [contenteditable="true"]')) return false;
+    return true;
+  }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-      state.current = Math.min(state.current + 1, sections.length - 1);
-      sections[state.current].scrollIntoView({ behavior: 'smooth' });
-    }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-      state.current = Math.max(state.current - 1, 0);
-      sections[state.current].scrollIntoView({ behavior: 'smooth' });
-    }
-  });
+    const keys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'];
+    if (!keys.includes(e.key)) return;
+    if (!arrowShouldControlDeck(e)) return;
+    if (!document.body.contains(sections[0])) return;
 
-  const syncObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) state.current = sections.indexOf(entry.target);
-      });
-    },
-    { threshold: 0.6 },
-  );
-  sections.forEach((s) => syncObserver.observe(s));
+    e.preventDefault();
+
+    let current = indexOfMostVisibleSlide();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      current = Math.min(current + 1, sections.length - 1);
+    } else {
+      current = Math.max(current - 1, 0);
+    }
+    sections[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 export default function decorate(block) {
