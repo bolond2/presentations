@@ -1,5 +1,5 @@
-/* Presentation typefaces — falls back to site --heading-font-family / --body-font-family if blocked */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap');
+/* Presentation typefaces — Source Sans 3 (Adobe-open UI sans) + Barlow Condensed (deck headlines) via Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap');
 
 /* ─── slide block — Adobe dark premium presentation design ─── */
 
@@ -11,9 +11,9 @@
   --slide-accent-purple: #7e3bf2;
   --slide-text: #f4f4f4;
   --slide-muted: #5a5a5a;
-  --slide-display: 'Bebas Neue', var(--heading-font-family);
+  --slide-display: 'Barlow Condensed', var(--heading-font-family);
   --slide-body: 'Source Sans 3', var(--body-font-family);
-  --slide-mono: 'Source Code Pro', 'Courier New', monospace;
+  --slide-mono: 'Source Code Pro', ui-monospace, 'Cascadia Code', 'SF Mono', menlo, consolas, monospace;
 }
 
 /* ─── page scroll behavior when slide block present ─── */
@@ -150,11 +150,11 @@ body:has(.slide)::before {
   font-family: var(--slide-display);
   font-size: clamp(2.5rem, 5.5vw, 5.5rem);
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--slide-text);
   max-width: 1000px;
   margin: 0 0 28px;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 /* accent color on first word via JS-injected span */
