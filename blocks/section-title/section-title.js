@@ -51,6 +51,20 @@ function cellText(row) {
   return (col?.textContent ?? '').trim();
 }
 
+/**
+ * DA / Franklin key–value table rows often have two columns: label | authored value.
+ * Headings/text must be read only from the value column so we never pick `<p>Title</p>` labels.
+ */
+function valueColumnScope(row) {
+  if (!row) return row;
+  if (typeof row.matches === 'function' && row.matches('.section-title')) {
+    return row;
+  }
+  if (!row.children?.length) return row;
+  if (row.children.length === 2) return row.children[1];
+  return row.children[0];
+}
+
 function get(config, ...keys) {
   const v = keys.reduce((acc, k) => acc ?? config[k], undefined);
   return typeof v === 'string' ? v.trim() : '';
@@ -83,7 +97,8 @@ function parseFromId(id) {
 }
 
 function getHeadingFromCell(cell, existingHeading = null) {
-  const heading = existingHeading ?? cell?.querySelector?.(HEADING_SELECTOR);
+  const scope = valueColumnScope(cell);
+  const heading = existingHeading ?? scope?.querySelector?.(HEADING_SELECTOR);
   if (heading) {
     return {
       text: (heading.textContent ?? '').trim(),
@@ -119,7 +134,8 @@ function readTitleFromRows(rows, block) {
   };
   const legacyFour = rows.length > 0 && rows.length <= 4;
   const titleSource = rows.length >= 1 ? rows[0] : block;
-  const titleHeadingEl = titleSource?.querySelector?.(HEADING_SELECTOR);
+  const titleSearchRoot = valueColumnScope(titleSource);
+  const titleHeadingEl = titleSearchRoot?.querySelector?.(HEADING_SELECTOR) ?? null;
   state.titleHeadingEl = titleHeadingEl;
   const titleInfo = getHeadingFromCell(titleSource, titleHeadingEl);
   if (!hasValue(titleInfo.text) && !titleHeadingEl) return state;
@@ -149,7 +165,8 @@ function readSubtitleFromRows(rows, block) {
   };
   const legacyFour = rows.length > 0 && rows.length <= 4;
   if (legacyFour && rows.length >= 3) {
-    state.subHeadingEl = rows[2]?.querySelector?.(HEADING_SELECTOR) ?? null;
+    const subScope = valueColumnScope(rows[2]);
+    state.subHeadingEl = subScope?.querySelector?.(HEADING_SELECTOR) ?? null;
     const sub = getHeadingFromCell(rows[2], state.subHeadingEl);
     if (hasValue(sub.text) || state.subHeadingEl) {
       state.subtitleText = sub.text;
@@ -267,7 +284,8 @@ function applySubtitleScan(rows, subIdx, cfg) {
   if (subIdx < 0) return;
   const subRow = rows[subIdx];
   if (!subRow) return;
-  const subEl = subRow.querySelector(HEADING_SELECTOR);
+  const subScope = valueColumnScope(subRow);
+  const subEl = subScope?.querySelector?.(HEADING_SELECTOR);
   const subInfo = getHeadingFromCell(subRow, subEl);
   if (!hasValue(cfg.subtitle) && (hasValue(subInfo.text) || subEl)) {
     cfg.subtitle = subInfo.text;
@@ -366,7 +384,8 @@ export default function decorate(block) {
   if (!state.subHeadingEl) {
     const si = findSubtitleRowIndex(rows);
     if (si >= 0) {
-      state.subHeadingEl = rows[si]?.querySelector?.(HEADING_SELECTOR) ?? null;
+      const subVs = valueColumnScope(rows[si]);
+      state.subHeadingEl = subVs?.querySelector?.(HEADING_SELECTOR) ?? null;
     }
   }
   if (initialTone && !state.toneClass) state.toneClass = initialTone;
