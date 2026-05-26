@@ -13,6 +13,38 @@ import {
 } from './aem.js';
 
 /**
+ * Document Authoring / Universal Editor — copy attributes between nodes.
+ * Used by blocks (e.g. section-title) after DOM rewrites to keep data-aue-* / data-richtext-*.
+ * @param {Element} from Source element
+ * @param {Element} to Target element
+ * @param {string[]} [attributes] Attribute names to move; default all.
+ */
+export function moveAttributes(from, to, attributes) {
+  if (!attributes) {
+    // eslint-disable-next-line no-param-reassign
+    attributes = [...from.attributes].map(({ nodeName }) => nodeName);
+  }
+  attributes.forEach((attr) => {
+    const value = from.getAttribute(attr);
+    if (value) {
+      to.setAttribute(attr, value);
+      from.removeAttribute(attr);
+    }
+  });
+}
+
+/** Move UE/DA instrumentation attributes from one element to another. */
+export function moveInstrumentation(from, to) {
+  moveAttributes(
+    from,
+    to,
+    [...from.attributes]
+      .map(({ nodeName }) => nodeName)
+      .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-')),
+  );
+}
+
+/**
  * Builds hero block and prepends to main in a new section.
  * @param {Element} main The container element
  */
