@@ -1,5 +1,5 @@
 /**
- * Section title: semantic heading + optional subtitle, with size, alignment, and tone.
+ * Section title: semantic heading + optional subtitle, with size, alignment, and token-based text color.
  * Supports a legacy 4-row table (title row, title size, subtitle row, subtitle size) and
  * key/value rows from readBlockConfig (UE/DA). Legacy imports: parseFromId() reads optional
  * heading id fragments (---) from migrated content only.
@@ -10,9 +10,10 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6, p';
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
 const ALIGNMENTS = ['left', 'center', 'right'];
-/** Allowlist for block `classes` (tone); avoids arbitrary class injection */
+/** Allowlist for block `classes` (text color presets); maps to tokens in section-title.css */
 const ALLOWED_TONE_CLASSES = new Set([
   '',
+  'section-title-tone-text',
   'section-title-tone-muted',
   'section-title-tone-accent',
 ]);
@@ -128,8 +129,11 @@ function normalizeToneClass(raw) {
   const t = raw.trim();
   if (ALLOWED_TONE_CLASSES.has(t)) return t;
   const lower = t.toLowerCase();
-  if (lower === 'accent') return 'section-title-tone-accent';
-  if (lower === 'muted') return 'section-title-tone-muted';
+  if (lower === 'accent' || lower === 'link') return 'section-title-tone-accent';
+  if (lower === 'muted' || lower === 'secondary') return 'section-title-tone-muted';
+  if (lower === 'text' || lower === 'body' || lower === 'primary') {
+    return 'section-title-tone-text';
+  }
   return '';
 }
 
@@ -349,6 +353,7 @@ function renderSectionTitle(block, state) {
     'subtitle-size-m',
     'subtitle-size-s',
     'subtitle-size-xs',
+    'section-title-tone-text',
     'section-title-tone-muted',
     'section-title-tone-accent',
   );

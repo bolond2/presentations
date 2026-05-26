@@ -35,6 +35,12 @@ main .section-title.subtitle-size-xs .subtitle {
   font-size: var(--heading-font-size-xs);
 }
 
+/* Text color presets — each maps to a site token (works on .section.dark via inherited vars) */
+main .section-title.section-title-tone-text .title,
+main .section-title.section-title-tone-text .subtitle {
+  color: var(--text-color);
+}
+
 main .section-title.section-title-tone-muted .title,
 main .section-title.section-title-tone-muted .subtitle {
   color: var(--dark-color);

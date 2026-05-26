@@ -73,13 +73,15 @@
         {
           "component": "select",
           "name": "classes",
-          "label": "Tone",
+          "label": "Text color",
           "value": "",
           "valueType": "string",
+          "description": "Uses design tokens: inherit = section/body default; Body = --text-color; Muted = --dark-color; Accent = --link-color.",
           "options": [
-            { "name": "Default", "value": "" },
-            { "name": "Muted", "value": "section-title-tone-muted" },
-            { "name": "Accent", "value": "section-title-tone-accent" }
+            { "name": "Default (inherit)", "value": "" },
+            { "name": "Body text (--text-color)", "value": "section-title-tone-text" },
+            { "name": "Muted / secondary (--dark-color)", "value": "section-title-tone-muted" },
+            { "name": "Accent / link (--link-color)", "value": "section-title-tone-accent" }
           ]
         },
         {
