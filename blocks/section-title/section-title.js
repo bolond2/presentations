@@ -126,7 +126,11 @@ function createTitleElement(tag, className, text, id, sourceEl) {
 function normalizeToneClass(raw) {
   if (!raw || typeof raw !== 'string') return '';
   const t = raw.trim();
-  return ALLOWED_TONE_CLASSES.has(t) ? t : '';
+  if (ALLOWED_TONE_CLASSES.has(t)) return t;
+  const lower = t.toLowerCase();
+  if (lower === 'accent') return 'section-title-tone-accent';
+  if (lower === 'muted') return 'section-title-tone-muted';
+  return '';
 }
 
 /**
@@ -233,7 +237,7 @@ function applyConfig(state, config) {
   }
   const alignField = normalizeAlignment(cfg('alignment'));
   if (alignField) state.alignVal = alignField;
-  const classesField = cfg('classes');
+  const classesField = cfg('classes', 'tone');
   const tone = normalizeToneClass(classesField);
   if (tone) {
     state.toneClass = tone;
