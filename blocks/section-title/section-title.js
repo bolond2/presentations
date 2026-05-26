@@ -123,6 +123,43 @@ function createTitleElement(tag, className, text, id, sourceEl) {
   return el;
 }
 
+function normalizeToneClass(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const t = raw.trim();
+  return ALLOWED_TONE_CLASSES.has(t) ? t : '';
+}
+
+/**
+ * Cells that wrapTextNodes() turns into <p>; those must not be mistaken for subtitle rows.
+ * Match only tight tokens (not prose) so real subtitle paragraphs are found.
+ */
+function isStrictAlignToken(raw) {
+  if (!hasValue(raw)) return false;
+  return /^(left|center|right)$/i.test(raw.trim());
+}
+
+function isStrictSizeToken(raw) {
+  if (!hasValue(raw)) return false;
+  return /^(size-)?(xxl|xl|l|m|s|xs)$/i.test(raw.trim());
+}
+
+/** Title/subtitle *type* fields often store a lone h1–p token in a cell. */
+function isHeadingLevelOrParagraphTypeToken(raw) {
+  if (!hasValue(raw)) return false;
+  return /^(h[1-6]|p)$/i.test(raw.trim());
+}
+
+function isMetadataRow(row) {
+  if (!row?.children?.length) return true;
+  const raw = cellText(row);
+  if (!hasValue(raw)) return true;
+  if (normalizeToneClass(raw)) return true;
+  if (isStrictAlignToken(raw)) return true;
+  if (isStrictSizeToken(raw)) return true;
+  if (isHeadingLevelOrParagraphTypeToken(raw)) return true;
+  return false;
+}
+
 function readTitleFromRows(rows, block) {
   const state = {
     titleText: '',
@@ -164,57 +201,25 @@ function readSubtitleFromRows(rows, block) {
     subHeadingEl: null,
   };
   const legacyFour = rows.length > 0 && rows.length <= 4;
-  if (legacyFour && rows.length >= 3) {
+  /** Old 4-row *doc* table: row1 title size, row2 subtitle, row3 subtitle size — not DA rows (type | title size | alignment). */
+  let legacyConsumedSubtitleRow = false;
+  if (legacyFour && rows.length >= 3 && !isMetadataRow(rows[2])) {
     const subScope = valueColumnScope(rows[2]);
     state.subHeadingEl = subScope?.querySelector?.(HEADING_SELECTOR) ?? null;
     const sub = getHeadingFromCell(rows[2], state.subHeadingEl);
     if (hasValue(sub.text) || state.subHeadingEl) {
+      legacyConsumedSubtitleRow = true;
       state.subtitleText = sub.text;
       state.subtitleTag = sub.tag;
     }
   }
-  if (legacyFour && rows.length >= 4) state.subtitleSizeClass = normalizeSize(cellText(rows[3]));
+  if (legacyFour && rows.length >= 4 && legacyConsumedSubtitleRow) {
+    state.subtitleSizeClass = normalizeSize(cellText(rows[3]));
+  }
   if (rows.length === 0 && hasValue(block.getAttribute?.('data-subtitle'))) {
     state.subtitleText = block.getAttribute('data-subtitle');
   }
   return state;
-}
-
-function normalizeToneClass(raw) {
-  if (!raw || typeof raw !== 'string') return '';
-  const t = raw.trim();
-  return ALLOWED_TONE_CLASSES.has(t) ? t : '';
-}
-
-/**
- * Cells that wrapTextNodes() turns into <p>; those must not be mistaken for subtitle rows.
- * Match only tight tokens (not prose) so real subtitle paragraphs are found.
- */
-function isStrictAlignToken(raw) {
-  if (!hasValue(raw)) return false;
-  return /^(left|center|right)$/i.test(raw.trim());
-}
-
-function isStrictSizeToken(raw) {
-  if (!hasValue(raw)) return false;
-  return /^(size-)?(xxl|xl|l|m|s|xs)$/i.test(raw.trim());
-}
-
-/** Title/subtitle *type* fields often store a lone h1–p token in a cell. */
-function isHeadingLevelOrParagraphTypeToken(raw) {
-  if (!hasValue(raw)) return false;
-  return /^(h[1-6]|p)$/i.test(raw.trim());
-}
-
-function isMetadataRow(row) {
-  if (!row?.children?.length) return true;
-  const raw = cellText(row);
-  if (!hasValue(raw)) return true;
-  if (normalizeToneClass(raw)) return true;
-  if (isStrictAlignToken(raw)) return true;
-  if (isStrictSizeToken(raw)) return true;
-  if (isHeadingLevelOrParagraphTypeToken(raw)) return true;
-  return false;
 }
 
 function applyConfig(state, config) {
